@@ -1,0 +1,117 @@
+services:
+  redis1:
+    image: redis/redis-stack-server:7.4.0-v0
+    container_name: redis1
+    restart: on-failure
+    ports:
+      - "6381:6379"
+    volumes:
+      - ./redis1/etc/redis-stack.conf:/redis-stack.conf
+      - ./redis1/data:/data
+      - ./redis1/log:/var/log/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redis-network
+
+  redis2:
+    image: redis/redis-stack-server:7.4.0-v0
+    container_name: redis2
+    restart: on-failure
+    ports:
+      - "6382:6379"
+    volumes:
+      - ./redis2/etc/redis-stack.conf:/redis-stack.conf
+      - ./redis2/data:/data
+      - ./redis2/log:/var/log/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redis-network
+
+  redis3:
+    image: redis/redis-stack-server:7.4.0-v0
+    container_name: redis3
+    restart: on-failure
+    ports:
+      - "6383:6379"
+    volumes:
+      - ./redis3/etc/redis-stack.conf:/redis-stack.conf
+      - ./redis3/data:/data
+      - ./redis3/log:/var/log/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redis-network
+
+  sentinel1:
+    image: redis:7.4.0
+    container_name: sentinel1
+    restart: on-failure
+    command: ["/usr/local/bin/start-sentinel.sh"]
+    depends_on:
+      redis1:
+        condition: service_healthy
+      redis2:
+        condition: service_started
+      redis3:
+        condition: service_started
+    ports:
+      - "26381:26379"
+    volumes:
+      - ./sentinel1:/data
+      - ./start-sentinel.sh:/usr/local/bin/start-sentinel.sh:ro
+    networks:
+      - redis-network
+
+  sentinel2:
+    image: redis:7.4.0
+    container_name: sentinel2
+    command: ["/usr/local/bin/start-sentinel.sh"]
+    depends_on:
+      redis1:
+        condition: service_healthy
+      redis2:
+        condition: service_started
+      redis3:
+        condition: service_started
+    ports:
+      - "26382:26379"
+    volumes:
+      - ./sentinel2:/data
+      - ./start-sentinel.sh:/usr/local/bin/start-sentinel.sh:ro
+    networks:
+      - redis-network
+
+  sentinel3:
+    image: redis:7.4.0
+    container_name: sentinel3
+    command: ["/usr/local/bin/start-sentinel.sh"]
+    depends_on:
+      redis1:
+        condition: service_healthy
+      redis2:
+        condition: service_started
+      redis3:
+        condition: service_started
+    ports:
+      - "26383:26379"
+    volumes:
+      - ./sentinel3:/data
+      - ./start-sentinel.sh:/usr/local/bin/start-sentinel.sh:ro
+    networks:
+      - redis-network
+
+
+networks:
+  redis-network:
+    driver: bridge

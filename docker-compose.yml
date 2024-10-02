@@ -21,6 +21,7 @@ services:
     image: redis/redis-stack-server:7.4.0-v0
     container_name: redis2
     restart: on-failure
+    #command: redis-server --replicaof redis1 6379
     ports:
       - "6382:6379"
     volumes:
@@ -39,6 +40,7 @@ services:
     image: redis/redis-stack-server:7.4.0-v0
     container_name: redis3
     restart: on-failure
+    #command: redis-server --replicaof redis1 6379
     ports:
       - "6383:6379"
     volumes:
@@ -52,6 +54,7 @@ services:
       retries: 5
     networks:
       - redis-network
+
 
   sentinel1:
     image: redis:7.4.0
